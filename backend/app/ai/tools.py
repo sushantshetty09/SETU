@@ -185,7 +185,7 @@ def execute_tool(tool_name: str, tool_input: Dict[str, Any], db: Session) -> Dic
                     "match_percentage": 85
                 })
 
-        return {"count": len(results), "schemes": results[:5]}
+        return {"count": len(results), "schemes": results[:10]}
 
     elif tool_name == "get_scheme_details":
         scheme_id = tool_input.get("scheme_id", "").strip().lower()

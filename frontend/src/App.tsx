@@ -15,6 +15,7 @@ import { ChatPage } from './pages/ChatPage';
 import { DigiLockerCallback } from './pages/DigiLockerCallback';
 import { CscPage } from './pages/CscPage';
 import { AboutPage } from './pages/AboutPage';
+import { DashboardPage } from './pages/DashboardPage';
 
 export const App: React.FC = () => {
   return (
@@ -39,6 +40,7 @@ export const App: React.FC = () => {
           <Route path="/digilocker/callback" element={<DigiLockerCallback />} />
           <Route path="/csc" element={<CscPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
         </Routes>
       </main>
 

@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     
     # AI
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+    OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
     CLAUDE_MODEL: str = "claude-3-5-sonnet-20241022"
     
     # Database

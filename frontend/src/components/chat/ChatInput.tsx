@@ -31,9 +31,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   const defaultSuggestions = [
-    "Find schemes for me",
-    "I need a scholarship for college",
-    "Did I get my Gruha Lakshmi money this month?",
+    "Find scholarship for college",
+    "Show scholarship offers & amounts",
+    "Did I get my Gruha Lakshmi money?",
     "What documents do I need for PM Kisan?",
     "Check Ayushman Bharat cover"
   ];
@@ -41,16 +41,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const activePills = suggestions.length > 0 ? suggestions : defaultSuggestions;
 
   return (
-    <div className="bg-white border-t border-slate-200 p-3 sm:p-4 space-y-3">
+    <div className="bg-white border-t border-slate-200 p-3 sm:p-4 space-y-2.5 flex-shrink-0">
       {/* Contextual Quick Reply Pills */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
-        <Sparkles className="w-3.5 h-3.5 text-setu-saffron flex-shrink-0" />
+      <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs scrollbar-none">
+        <Sparkles className="w-3.5 h-3.5 text-[#FF7700] flex-shrink-0" />
         {activePills.map((pill, idx) => (
           <button
             key={idx}
             type="button"
             onClick={() => onSelectSuggestion(pill)}
-            className="px-3 py-1 rounded-full bg-slate-100 hover:bg-setu-blue hover:text-white text-slate-700 font-medium whitespace-nowrap transition-all border border-slate-200 shadow-2xs"
+            className="px-3 py-1 rounded-full bg-slate-100 hover:bg-[#00875A] hover:text-white text-slate-700 font-medium whitespace-nowrap transition-all border border-slate-200 shadow-2xs"
           >
             {pill}
           </button>
@@ -70,16 +70,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          disabled={disabled}
-          placeholder="Ask SETU in your language (e.g. What schemes can I get?)..."
-          className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-full text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-setu-blue focus:ring-1 focus:ring-setu-blue transition-all disabled:opacity-50"
+          placeholder="Ask SETU in your language (e.g. Find scholarship offers for college)..."
+          className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-full text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-[#00875A] focus:ring-1 focus:ring-[#00875A] transition-all"
         />
 
         {/* Send Button */}
         <button
           type="submit"
           disabled={!input.trim() || disabled}
-          className="w-10 h-10 rounded-full bg-setu-saffron hover:bg-setu-saffron-dark text-white flex items-center justify-center shadow-sm disabled:opacity-40 transition-all flex-shrink-0"
+          className="w-10 h-10 rounded-full bg-[#00875A] hover:bg-[#00704A] text-white flex items-center justify-center shadow-sm disabled:opacity-40 transition-all flex-shrink-0"
           title="Send message"
         >
           <Send className="w-4 h-4 ml-0.5" />

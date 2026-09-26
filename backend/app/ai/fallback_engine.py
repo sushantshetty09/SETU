@@ -213,23 +213,28 @@ async def stream_ai_response(
     yield f"data: {json.dumps({'type': 'action', 'action': 'show_schemes', 'data': {'schemes': schemes_found, 'count': len(schemes_found)}})}\n\n"
     await asyncio.sleep(0.1)
 
-    # Generate localized conversational response
+    # Generate localized conversational response with explicit count and financial offer breakdown
+    is_scholarship_query = "education" in categories or any(w in msg_lower for w in ["scholarship", "college", "student", "study", "ವಿದ್ಯಾರ್ಥಿವೇತನ", "छात्रवृत्ति"])
+    
     if is_kannada:
-        scheme_bullets = "\n".join([f"- {s['name']}: {s.get('benefit_amount', 'ಸಹಾಯಧನ')} ({s.get('ministry', '')})" for s in schemes_found[:3]])
-        text = f"ನಿಮ್ಮ ಅಗತ್ಯಕ್ಕೆ ಸೂಕ್ತವಾದ {len(schemes_found)} ಸರ್ಕಾರಿ ಯೋಜನೆಗಳನ್ನು ಕಂಡುಹಿಡಿಯಲಾಗಿದೆ:\n\n{scheme_bullets}\n\nಬಲಭಾಗದಲ್ಲಿ ವಿವರವಾದ ಕಾರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಬಹುದು. ನೀವು ಯಾವುದಾದರೂ ಯೋಜನೆಯ ಅರ್ಹತೆಯನ್ನು ಪರಿಶೀಲಿಸಲು ಬಯಸುವಿರಾ?"
-        pills = ["ಅರ್ಹತೆ ಪರಿಶೀಲಿಸಿ", "ದಾಖಲೆಗಳ ವಿವರ", "ಅರ್ಜಿ ಸಲ್ಲಿಸುವುದು ಹೇಗೆ?"]
+        offer_word = "ವಿದ್ಯಾರ್ಥಿವೇತನ ಆಫರ್‌ಗಳು (Scholarship Offers)" if is_scholarship_query else "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು"
+        scheme_bullets = "\n".join([f"{i+1}. {s['name']}\n   - ಸಹಾಯಧನ ಮೊತ್ತ (Benefit Offer): {s.get('benefit_amount', 'ಲಭ್ಯವಿದೆ')}\n   - ಇಲಾಖೆ: {s.get('ministry', '')}" for i, s in enumerate(schemes_found)])
+        text = f"ನಿಮ್ಮ ಪ್ರಶ್ನೆಗೆ ಸೂಕ್ತವಾದ ಒಟ್ಟು {len(schemes_found)} {offer_word} ಕಂಡುಹಿಡಿಯಲಾಗಿದೆ:\n\n{scheme_bullets}\n\nಬಲಭಾಗದಲ್ಲಿರುವ ಫಲಕದಲ್ಲಿ ಎಲ್ಲಾ ಅಧಿಕೃತ ಅರ್ಜಿ ಲಿಂಕ್‌ಗಳೊಂದಿಗೆ ವಿವರವಾದ ಕಾರ್ಡ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಿದೆ. ನೀವು ಯಾವುದಾದರೂ ಯೋಜನೆಯ ಅರ್ಹತೆಯನ್ನು ಪರಿಶೀಲಿಸಲು ಬಯಸುವಿರಾ?"
+        pills = ["ಅರ್ಹತೆ ಪರಿಶೀಲಿಸಿ", "ದಾಖಲೆಗಳ ವಿವರ", "ಅರ್ಜಿ ಸಲ್ಲಿಸುವುದು ಹೇಗೆ?", "ಇನ್ನಷ್ಟು ಆಫರ್‌ಗಳು"]
     elif is_hindi:
-        scheme_bullets = "\n".join([f"- {s['name']}: {s.get('benefit_amount', 'लाभ')} ({s.get('ministry', '')})" for s in schemes_found[:3]])
-        text = f"आपकी आवश्यकता के अनुसार {len(schemes_found)} उपयुक्त सरकारी योजनाएं मिली हैं:\n\n{scheme_bullets}\n\nविस्तृत विवरण दाईं ओर दिए गए पैनल में देख सकते हैं। क्या आप किसी विशेष योजना की पात्रता या आवश्यक दस्तावेज जानना चाहते हैं?"
-        pills = ["मेरी पात्रता जांचें", "आवश्यक दस्तावेज", "आवेदन कैसे करें?"]
+        offer_word = "छात्रवृत्ति योजनाएं (Scholarship Offers)" if is_scholarship_query else "सरकारी योजनाएं"
+        scheme_bullets = "\n".join([f"{i+1}. {s['name']}\n   - वित्तीय सहायता राशि (Offer Amount): {s.get('benefit_amount', 'उपलब्ध')}\n   - मंत्रालय: {s.get('ministry', '')}" for i, s in enumerate(schemes_found)])
+        text = f"आपकी मांग के अनुसार कुल {len(schemes_found)} {offer_word} उपलब्ध हैं:\n\n{scheme_bullets}\n\nदाईं ओर दिए गए पैनल में सभी योजना कार्ड उनके आधिकारिक पोर्टल लिंक के साथ उपलब्ध हैं। क्या आप किसी विशेष योजना की पात्रता या आवश्यक दस्तावेज जानना चाहते हैं?"
+        pills = ["मेरी पात्रता जांचें", "आवश्यक दस्तावेज", "आवेदन कैसे करें?", "और योजनाएं देखें"]
     else:
-        scheme_bullets = "\n".join([f"- {s['name']}: {s.get('benefit_amount', '')} ({s.get('ministry', '')})" for s in schemes_found[:3]])
-        text = f"I found {len(schemes_found)} government scheme{'s' if len(schemes_found) != 1 else ''} matching your inquiry:\n\n{scheme_bullets}\n\nI have loaded the scheme cards on the right panel. Would you like to check your eligibility, see required documents, or apply online?"
-        pills = ["Check my eligibility", "What documents do I need?", "How do I apply?", "Save these schemes"]
+        offer_word = "Scholarship Offers" if is_scholarship_query else "Government Scheme Offers"
+        scheme_bullets = "\n".join([f"{i+1}. {s['name']}\n   • Offer Amount: {s.get('benefit_amount', 'Standard DBT Assistance')}\n   • Ministry: {s.get('ministry', '')}" for i, s in enumerate(schemes_found)])
+        text = f"I found a total of {len(schemes_found)} active {offer_word} matching your inquiry:\n\n{scheme_bullets}\n\nI have loaded the complete scheme cards with direct official government application links in the right panel. Would you like to check your eligibility or see the document checklist for any of these?"
+        pills = ["Check my eligibility", "What documents do I need?", "How do I apply?", "Check another category"]
 
     for chunk in text.split(" "):
         yield f"data: {json.dumps({'type': 'text', 'content': chunk + ' '})}\n\n"
-        await asyncio.sleep(0.02)
+        await asyncio.sleep(0.015)
 
     yield f"data: {json.dumps({'type': 'suggestions', 'pills': pills})}\n\n"
     yield f"data: {json.dumps({'type': 'done'})}\n\n"

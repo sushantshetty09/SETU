@@ -19,10 +19,22 @@ async def chat_stream(
     Main entry point for AI Chat. Uses Claude if ANTHROPIC_API_KEY is available,
     otherwise uses the built-in deterministic multilingual engine.
     """
-    if settings.ANTHROPIC_API_KEY and settings.ANTHROPIC_API_KEY.strip() != "":
+    api_key = settings.OPENROUTER_API_KEY or settings.ANTHROPIC_API_KEY
+    is_openrouter = bool(settings.OPENROUTER_API_KEY and settings.OPENROUTER_API_KEY.strip())
+
+    if api_key and api_key.strip() != "":
         try:
             import anthropic
-            client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+            
+            if is_openrouter:
+                client = anthropic.AsyncAnthropic(
+                    api_key=api_key,
+                    base_url="https://openrouter.ai/api",
+                )
+                model_name = "anthropic/claude-3.5-sonnet"
+            else:
+                client = anthropic.AsyncAnthropic(api_key=api_key)
+                model_name = settings.CLAUDE_MODEL
 
             # Build messages list
             messages = []
@@ -33,7 +45,7 @@ async def chat_stream(
 
             # Call Anthropic with tools
             response = await client.messages.create(
-                model=settings.CLAUDE_MODEL,
+                model=model_name,
                 max_tokens=1024,
                 system=SYSTEM_PROMPT,
                 tools=ANTHROPIC_TOOLS,
@@ -67,7 +79,7 @@ async def chat_stream(
 
                     # Second turn to summarize tool result
                     followup = await client.messages.create(
-                        model=settings.CLAUDE_MODEL,
+                        model=model_name,
                         max_tokens=1024,
                         system=SYSTEM_PROMPT,
                         tools=ANTHROPIC_TOOLS,

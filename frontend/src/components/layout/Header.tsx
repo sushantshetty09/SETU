@@ -17,7 +17,13 @@ export const Header: React.FC = () => {
     localStorage.setItem('setu_user', JSON.stringify(user));
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const { logout } = await import('../../firebase');
+      await logout();
+    } catch (e) {
+      console.error(e);
+    }
     setCurrentUser(null);
     localStorage.removeItem('setu_user');
   };
