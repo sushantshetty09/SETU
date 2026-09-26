@@ -81,13 +81,18 @@ export const DynamicRightPanel: React.FC<DynamicRightPanelProps> = ({
       {/* 2. STATE: SCHEMES_FOUND */}
       {state === 'SCHEMES_FOUND' && data?.schemes && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex items-center justify-between">
             <div>
-              <h4 className="font-bold text-sm text-slate-900">
-                Matching Schemes Found ({data.schemes.length})
+              <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">
+                Official Government Entitlements
+              </span>
+              <h4 className="font-extrabold text-sm text-slate-900">
+                {data.schemes.length} Active Offers & Schemes Found
               </h4>
-              <p className="text-[11px] text-slate-500">Matched with your requirements</p>
             </div>
+            <span className="bg-[#00875A] text-white text-xs font-black px-2.5 py-1 rounded-full shadow-xs">
+              {data.schemes.length} Offers
+            </span>
           </div>
 
           <div className="space-y-3">

@@ -726,14 +726,255 @@ SEED_SCHEMES = [
         ],
         "last_updated": "25 Sep 2025",
         "view_count": 10400
+    },
+    {
+        "id": "pm-yasasvi",
+        "code": "GOI/MSJE/2024/0130",
+        "name": "PM-YASASVI Scholarship Scheme",
+        "name_native": "पीएम यशस्वी छात्रवृत्ति योजना (ಯಶಸ್ವಿ ವಿದ್ಯಾರ್ಥಿವೇತನ)",
+        "category": "education",
+        "scheme_type": "Central",
+        "state": "All India",
+        "ministry": "Ministry of Social Justice and Empowerment",
+        "summary": "Merit-based scholarships up to Rs 1,25,000 per year for OBC, EBC, and DNT students studying in Top Class Schools and Colleges across India.",
+        "description": "PM Young Achievers Scholarship Award Scheme for Vibrant India (PM-YASASVI) provides prestigious financial support to meritorious students from OBC, Economically Backward Class (EBC), and De-Notified Nomadic and Semi-Nomadic Tribes (DNT) categories.",
+        "benefit_amount": "Rs 75,000 to Rs 1,25,000 / year",
+        "benefit_type": "Scholarship",
+        "application_mode": "Online",
+        "status": "Open",
+        "deadline": "31 Dec 2025",
+        "apply_url": "https://scholarships.gov.in",
+        "min_age": 13,
+        "max_age": 28,
+        "gender_allowed": "any",
+        "income_ceiling": 250000.0,
+        "caste_eligibility": ["obc"],
+        "bpl_required": False,
+        "disability_required": False,
+        "student_only": True,
+        "farmer_only": False,
+        "additional_eligibility": [
+            "Student belonging to OBC, EBC, or DNT category",
+            "Annual family income less than Rs 2.50 Lakh",
+            "Enrolled in identified Top Class Schools (Class 9 & 11) or Top Class Colleges/Universities"
+        ],
+        "highlights": [
+            "Class 9 and 10 students: Up to Rs 75,000 per annum",
+            "Class 11 and 12 students: Up to Rs 1,25,000 per annum",
+            "Top College / University students: Full tuition fee plus Rs 86,000 per annum living stipend"
+        ],
+        "benefits_breakdown": [
+            "School Tier: Rs 75,000 to Rs 1,25,000 annual scholarship grant",
+            "College Tier: 100% Tuition fee waiver + living expenses direct DBT"
+        ],
+        "documents_required": [
+            "Aadhaar Card of the Student",
+            "OBC / EBC / DNT Category Certificate",
+            "Income Certificate (under Rs 2.5 Lakh)",
+            "Previous Class Marksheet (min 60%)",
+            "Bonafide School / College Admission Certificate"
+        ],
+        "application_steps": [
+            "Visit National Scholarship Portal (scholarships.gov.in)",
+            "Complete One Time Registration (OTR) with Aadhaar Face/OTP verification",
+            "Apply under 'PM-YASASVI Central Sector Scheme'",
+            "Submit online; school/college verifies and submits to ministry"
+        ],
+        "faqs": [
+            {"q": "Is there an entrance exam?", "a": "Selection is merit-based based on Class 8/10 marks and verified NSP institutional portal criteria."}
+        ],
+        "last_updated": "24 Sep 2025",
+        "view_count": 21500
+    },
+    {
+        "id": "pm-vidyalaxmi",
+        "code": "GOI/MoE/2024/0142",
+        "name": "Prime Minister Vidyalaxmi Scheme",
+        "name_native": "प्रधानमंत्री विद्यालक्ष्मी योजना",
+        "category": "education",
+        "scheme_type": "Central",
+        "state": "All India",
+        "ministry": "Department of Higher Education, Ministry of Education",
+        "summary": "Collateral-free, guarantor-free education loans up to Rs 7.50 Lakh with 75% Government Credit Guarantee and 3% interest subvention for higher education.",
+        "description": "PM Vidyalaxmi scheme empowers youth to pursue higher education in top 860 quality Higher Education Institutions (QHEIs) by providing collateral-free education loans with government backing and full interest subsidy for family incomes up to Rs 8 Lakh.",
+        "benefit_amount": "Collateral-Free Loan up to Rs 7,50,000 with 75% Govt Guarantee + Interest Subsidy",
+        "benefit_type": "Loan",
+        "application_mode": "Online",
+        "status": "Open",
+        "deadline": "Ongoing",
+        "apply_url": "https://www.vidyalakshmi.co.in",
+        "min_age": 17,
+        "max_age": 35,
+        "gender_allowed": "any",
+        "income_ceiling": 800000.0,
+        "caste_eligibility": ["general", "obc", "sc", "st"],
+        "bpl_required": False,
+        "disability_required": False,
+        "student_only": True,
+        "farmer_only": False,
+        "additional_eligibility": [
+            "Admitted to top NIRF-ranked Higher Educational Institutions in India",
+            "Annual family income up to Rs 8 Lakh for interest subvention",
+            "Zero requirement of third-party guarantor or collateral security"
+        ],
+        "highlights": [
+            "Loans up to Rs 7.50 Lakh receive 75% credit guarantee by Central Government",
+            "3% interest subvention during moratorium period for incomes up to Rs 8 Lakh",
+            "Seamless digital application linked with 40+ scheduled commercial banks"
+        ],
+        "benefits_breakdown": [
+            "Tuition fees, hostel charges, books, and laptop costs fully financed",
+            "Repayment starts only 1 year after course completion"
+        ],
+        "documents_required": [
+            "Student Aadhaar Card & PAN Card",
+            "College Admission Offer Letter & Fee Structure",
+            "Family Income Certificate / ITR",
+            "10th, 12th & Graduation Marksheets",
+            "Student Savings Bank Account Passbook"
+        ],
+        "application_steps": [
+            "Register on PM Vidyalaxmi Portal (vidyalakshmi.co.in)",
+            "Search and choose loan scheme from 40+ partner banks with Common Educational Loan Application Form (CELAF)",
+            "Upload admission letter and KYC details",
+            "Bank sanctions and disburses loan amount directly to the college institution"
+        ],
+        "faqs": [
+            {"q": "Do I need to pledge property or gold?", "a": "No, PM Vidyalaxmi loans up to Rs 7.5 Lakh are 100% collateral-free and guarantor-free."}
+        ],
+        "last_updated": "25 Sep 2025",
+        "view_count": 19400
+    },
+    {
+        "id": "aicte-pragati",
+        "code": "GOI/AICTE/2024/0155",
+        "name": "AICTE Pragati Scholarship for Girl Students",
+        "name_native": "एआईसीटीई प्रगति छात्रवृत्ति (ಯುವತಿಯರಿಗೆ ಎಐಸಿಟಿಇ ಪ್ರಗತಿ ಯೋಜನೆ)",
+        "category": "education",
+        "scheme_type": "Central",
+        "state": "All India",
+        "ministry": "All India Council for Technical Education (AICTE)",
+        "summary": "Financial grant of Rs 50,000 per year for girl students enrolled in technical degree or diploma courses across AICTE approved colleges.",
+        "description": "Pragati Scheme aims to provide assistance for advancement of girls pursuing technical education. Up to two girl children per family are eligible for Rs 50,000 per year throughout the duration of their degree/diploma program.",
+        "benefit_amount": "Rs 50,000 / year for every year of course",
+        "benefit_type": "Scholarship",
+        "application_mode": "Online",
+        "status": "Open",
+        "deadline": "31 Dec 2025",
+        "apply_url": "https://scholarships.gov.in",
+        "min_age": 16,
+        "max_age": 30,
+        "gender_allowed": "female",
+        "income_ceiling": 800000.0,
+        "caste_eligibility": ["general", "obc", "sc", "st"],
+        "bpl_required": False,
+        "disability_required": False,
+        "student_only": True,
+        "farmer_only": False,
+        "additional_eligibility": [
+            "Female student admitted to 1st year or 2nd year (lateral entry) of technical Degree/Diploma",
+            "AICTE approved college or university institution",
+            "Family income not exceeding Rs 8.00 Lakh per annum",
+            "Maximum two girl children per family"
+        ],
+        "highlights": [
+            "Rs 50,000 per annum towards college fee, computer purchase, books, and equipment",
+            "Disbursed via DBT directly into student's Aadhaar-seeded bank account",
+            "Renewable each academic year based on passing progression"
+        ],
+        "benefits_breakdown": [
+            "Rs 50,000 per year for 4 years (Degree: Total Rs 2,00,000)",
+            "Rs 50,000 per year for 3 years (Diploma: Total Rs 1,50,000)"
+        ],
+        "documents_required": [
+            "Student Aadhaar Card (Aadhaar Seeded Bank Account)",
+            "10th & 12th Marks Sheet",
+            "College Admission Allotment Letter & Tuition Fee Receipt",
+            "Family Income Certificate from Tehsildar/Revenue Officer",
+            "Declaration of parents confirming maximum two girls"
+        ],
+        "application_steps": [
+            "Register on National Scholarship Portal (scholarships.gov.in)",
+            "Select 'AICTE - Pragati Scholarship Scheme for Girl Students'",
+            "Upload admission letter and income proof",
+            "College Nodal Officer approves application for central disbursement"
+        ],
+        "faqs": [
+            {"q": "Can I receive state tuition waiver along with Pragati?", "a": "Yes, Pragati provides contingency/study grant support which can be availed alongside state tuition fee waivers."}
+        ],
+        "last_updated": "22 Sep 2025",
+        "view_count": 14800
+    },
+    {
+        "id": "central-sector-scholarship",
+        "code": "GOI/MoE/2024/0168",
+        "name": "Central Sector Scheme of Scholarships for College Students",
+        "name_native": "कॉलेज और विश्वविद्यालय के छात्रों के लिए केंद्रीय क्षेत्र छात्रवृत्ति योजना",
+        "category": "education",
+        "scheme_type": "Central",
+        "state": "All India",
+        "ministry": "Department of Higher Education, Ministry of Education",
+        "summary": "Merit-cum-means scholarship of Rs 12,000 to Rs 20,000 per year for top 80th percentile students pursuing regular graduation and post-graduation.",
+        "description": "Central Sector Scholarship provides financial assistance to meritorious students from low-income families to meet a part of their day-to-day expenses while pursuing higher studies in universities, colleges, and professional institutions.",
+        "benefit_amount": "Rs 12,000 to Rs 20,000 / year (Total up to Rs 76,000)",
+        "benefit_type": "Scholarship",
+        "application_mode": "Online",
+        "status": "Open",
+        "deadline": "31 Dec 2025",
+        "apply_url": "https://scholarships.gov.in",
+        "min_age": 17,
+        "max_age": 26,
+        "gender_allowed": "any",
+        "income_ceiling": 450000.0,
+        "caste_eligibility": ["general", "obc", "sc", "st"],
+        "bpl_required": False,
+        "disability_required": False,
+        "student_only": True,
+        "farmer_only": False,
+        "additional_eligibility": [
+            "Scored above 80th percentile in Class 12 board examination",
+            "Pursuing regular full-time undergraduate or postgraduate degree course",
+            "Annual family income not exceeding Rs 4.50 Lakh",
+            "Not availing any other government scholarship"
+        ],
+        "highlights": [
+            "Rs 12,000 per annum for Undergraduate courses (1st to 3rd year)",
+            "Rs 20,000 per annum for Postgraduate courses (4th and 5th year)",
+            "Total 82,000 fresh scholarships awarded every academic year (50% reserved for girls)"
+        ],
+        "benefits_breakdown": [
+            "UG Degree (3 Years): Rs 36,000 total scholarship",
+            "PG Degree (2 Years): Rs 40,000 total scholarship"
+        ],
+        "documents_required": [
+            "Class 12 Passing Marksheet with Roll Number",
+            "Student Aadhaar Card & Mobile Number",
+            "Income Certificate (under Rs 4.5 Lakh)",
+            "Bonafide College Student Certificate",
+            "Aadhaar-seeded Bank Passbook"
+        ],
+        "application_steps": [
+            "Visit scholarships.gov.in and complete OTR",
+            "Select 'Central Sector Scheme of Scholarships for College and University Students'",
+            "Enter Class 12 board roll number and year of passing for auto-verification of 80th percentile eligibility",
+            "Submit online application"
+        ],
+        "faqs": [
+            {"q": "What is the renewal criterion?", "a": "Minimum 50% marks in annual college exams and 75% attendance are required for automatic renewal."}
+        ],
+        "last_updated": "24 Sep 2025",
+        "view_count": 13200
     }
 ]
 
 def init_db_data(db):
-    # Check if schemes already exist
-    count = db.query(Scheme).count()
-    if count == 0:
-        for data in SEED_SCHEMES:
+    # Upsert all schemes to ensure all new schemes and scholarships are present in SQLite
+    for data in SEED_SCHEMES:
+        existing = db.query(Scheme).filter(Scheme.id == data["id"]).first()
+        if not existing:
             scheme = Scheme(**data)
             db.add(scheme)
-        db.commit()
+        else:
+            for k, v in data.items():
+                setattr(existing, k, v)
+    db.commit()

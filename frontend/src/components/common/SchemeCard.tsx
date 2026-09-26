@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Scheme } from '../../types';
-import { Heart, IndianRupee, Calendar, CheckCircle2, ChevronRight, ShieldAlert } from 'lucide-react';
+import { Heart, IndianRupee, Calendar, CheckCircle2, ChevronRight, ExternalLink } from 'lucide-react';
 
 interface SchemeCardProps {
   scheme: Scheme;
@@ -47,11 +47,12 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
     setSaved(!saved);
   };
 
-  const borderColor = CATEGORY_COLORS[scheme.category?.toLowerCase()] || '#1A3A6B';
+  const borderColor = CATEGORY_COLORS[scheme.category?.toLowerCase()] || '#00875A';
+  const officialUrl = scheme.apply_url || 'https://myscheme.gov.in';
 
   return (
     <div
-      className="bg-white rounded-lg border border-slate-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between overflow-hidden"
+      className="bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between overflow-hidden"
       style={{ borderLeft: `5px solid ${borderColor}` }}
     >
       <div className="p-4 sm:p-5">
@@ -68,14 +69,14 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
                   : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
               }`}
             >
-              {scheme.scheme_type === 'Central' ? 'Central' : (scheme.state || 'State')}
+              {scheme.scheme_type === 'Central' ? 'Central Scheme' : (scheme.state || 'State')}
             </span>
           </div>
 
-          {/* Match % badge (for wizard results) */}
+          {/* Match % badge */}
           {(showMatchBadge || scheme.match_percentage) && (
             <div className="flex items-center space-x-1 bg-emerald-50 text-emerald-700 border border-emerald-300 px-2 py-0.5 rounded-full text-xs font-bold">
-              <CheckCircle2 className="w-3.5 h-3.5 text-setu-green" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               <span>{scheme.match_percentage || 94}% Match</span>
             </div>
           )}
@@ -83,7 +84,7 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
 
         {/* Scheme Title & Native Name */}
         <Link to={`/schemes/${scheme.id}`} className="group block">
-          <h3 className="font-bold text-base text-slate-900 group-hover:text-setu-blue transition-colors leading-snug">
+          <h3 className="font-bold text-base text-slate-900 group-hover:text-[#00875A] transition-colors leading-snug">
             {scheme.name}
           </h3>
           {scheme.name_native && (
@@ -94,7 +95,7 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
         </Link>
 
         {/* Ministry Subtext */}
-        <p className="text-[13px] text-slate-500 mt-1 line-clamp-1">
+        <p className="text-[12px] text-slate-500 mt-1 line-clamp-1">
           {scheme.ministry}
         </p>
 
@@ -105,9 +106,9 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
 
         {/* Benefit & Status Meta */}
         <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-          <div className="flex items-center space-x-1.5 font-bold text-slate-800">
-            <IndianRupee className="w-4 h-4 text-setu-green flex-shrink-0" />
-            <span>{scheme.benefit_amount}</span>
+          <div className="flex items-center space-x-1 font-bold text-slate-800">
+            <IndianRupee className="w-3.5 h-3.5 text-[#00875A] flex-shrink-0" />
+            <span className="text-[#00875A]">{scheme.benefit_amount}</span>
           </div>
 
           <div className="flex items-center space-x-1.5 text-slate-500 text-[11px]">
@@ -119,15 +120,15 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
 
       {/* Action Buttons */}
       <div className="bg-slate-50/90 px-4 py-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
-        <Link
-          to={`/schemes/${scheme.id}`}
-          className="text-xs font-semibold text-setu-blue hover:text-setu-blue-dark flex items-center space-x-1 py-1"
-        >
-          <span>View Details</span>
-          <ChevronRight className="w-3.5 h-3.5" />
-        </Link>
-
         <div className="flex items-center space-x-2">
+          <Link
+            to={`/schemes/${scheme.id}`}
+            className="text-xs font-semibold text-slate-700 hover:text-[#00875A] flex items-center space-x-1 py-1"
+          >
+            <span>Details</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+
           <button
             type="button"
             onClick={toggleSave}
@@ -140,21 +141,19 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
           >
             <Heart className={`w-3.5 h-3.5 ${saved ? 'fill-rose-600' : ''}`} />
           </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (onCheckEligibility) {
-                onCheckEligibility(scheme);
-              } else {
-                navigate(`/schemes/${scheme.id}?tab=eligibility`);
-              }
-            }}
-            className="text-xs font-semibold px-2.5 py-1 rounded bg-setu-saffron hover:bg-setu-saffron-dark text-white shadow-xs transition-colors"
-          >
-            Eligibility
-          </button>
         </div>
+
+        {/* Direct Link to Official Government Website */}
+        <a
+          href={officialUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs font-bold px-3 py-1.5 rounded-md bg-[#00875A] hover:bg-[#00704A] text-white shadow-xs transition-all flex items-center space-x-1.5"
+          title={`Open official portal: ${officialUrl}`}
+        >
+          <span>Official Portal</span>
+          <ExternalLink className="w-3 h-3 text-white/90" />
+        </a>
       </div>
     </div>
   );
