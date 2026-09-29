@@ -26,7 +26,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   const handleVoiceTranscript = (transcript: string) => {
     if (transcript && transcript.trim()) {
-      onSendMessage(transcript.trim());
+      setInput(transcript.trim());
     }
   };
 

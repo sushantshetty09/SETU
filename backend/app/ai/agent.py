@@ -8,6 +8,21 @@ from app.ai.fallback_engine import stream_ai_response as stream_fallback_engine,
 
 logger = logging.getLogger("setu.ai")
 
+LANG_NAMES = {
+    "hi": "Hindi (हिन्दी)",
+    "kn": "Kannada (ಕನ್ನಡ)",
+    "ta": "Tamil (தமிழ்)",
+    "te": "Telugu (తెలుగు)",
+    "mr": "Marathi (मराठी)",
+    "ml": "Malayalam (മലയാളം)",
+    "bn": "Bengali (বাংলা)",
+    "gu": "Gujarati (ગુજરાતી)",
+    "pa": "Punjabi (ਪੰਜਾਬੀ)",
+    "ur": "Urdu (اردو)",
+    "or": "Odia (ଓଡ଼ିଆ)",
+    "en": "English"
+}
+
 async def chat_stream(
     message: str,
     language: str,
@@ -16,13 +31,33 @@ async def chat_stream(
     db: Session
 ) -> AsyncGenerator[str, None]:
     """
-    Main entry point for AI Chat. Uses Claude if ANTHROPIC_API_KEY is available,
+    Main entry point for AI Chat. Uses Claude/OpenRouter if API key is available,
     otherwise uses the built-in deterministic multilingual engine.
     """
-    if settings.ANTHROPIC_API_KEY and settings.ANTHROPIC_API_KEY.strip() != "":
+    api_key = settings.OPENROUTER_API_KEY or settings.ANTHROPIC_API_KEY
+    is_openrouter = bool(settings.OPENROUTER_API_KEY and settings.OPENROUTER_API_KEY.strip())
+    
+    target_lang_name = LANG_NAMES.get(language, language)
+    active_system_prompt = (
+        f"{SYSTEM_PROMPT}\n\n"
+        f"CRITICAL MULTILINGUAL INSTRUCTION: The citizen has explicitly selected the language '{target_lang_name}'. "
+        f"You MUST formulate your response in {target_lang_name} using correct native script and respectful phrasing. "
+        f"Do NOT default to English unless the selected language is English."
+    )
+
+    if api_key and api_key.strip() != "":
         try:
             import anthropic
-            client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+            
+            if is_openrouter:
+                client = anthropic.AsyncAnthropic(
+                    api_key=api_key,
+                    base_url="https://openrouter.ai/api",
+                )
+                model_name = "anthropic/claude-3.5-sonnet"
+            else:
+                client = anthropic.AsyncAnthropic(api_key=api_key)
+                model_name = settings.CLAUDE_MODEL
 
             # Build messages list
             messages = []
@@ -33,9 +68,9 @@ async def chat_stream(
 
             # Call Anthropic with tools
             response = await client.messages.create(
-                model=settings.CLAUDE_MODEL,
+                model=model_name,
                 max_tokens=1024,
-                system=SYSTEM_PROMPT,
+                system=active_system_prompt,
                 tools=ANTHROPIC_TOOLS,
                 messages=messages
             )
@@ -67,9 +102,9 @@ async def chat_stream(
 
                     # Second turn to summarize tool result
                     followup = await client.messages.create(
-                        model=settings.CLAUDE_MODEL,
+                        model=model_name,
                         max_tokens=1024,
-                        system=SYSTEM_PROMPT,
+                        system=active_system_prompt,
                         tools=ANTHROPIC_TOOLS,
                         messages=messages + [
                             {"role": "assistant", "content": [{"type": "tool_use", "id": content_block.id, "name": tool_name, "input": tool_input}]},
@@ -86,14 +121,13 @@ async def chat_stream(
                     for chunk in content_block.text.split(" "):
                         yield f"data: {json.dumps({'type': 'text', 'content': chunk + ' '})}\n\n"
 
-            # Suggestion pills
-            yield f"data: {json.dumps({'type': 'suggestions', 'pills': ['Check my eligibility', 'What documents do I need?', 'How do I apply?', 'Find other schemes']})}\n\n"
             yield f"data: {json.dumps({'type': 'done'})}\n\n"
             return
 
         except Exception as e:
-            logger.warning(f"Claude API invocation fallback triggered: {e}")
+            logger.warning(f"Claude API failed: {e}. Falling back to deterministic multilingual engine.")
+            # Fall through to fallback engine
 
-    # Fallback engine
-    async for event in stream_fallback_engine(message, language, conversation_history, user_profile, db):
-        yield event
+    # Built-in deterministic multilingual engine
+    async for chunk in stream_fallback_engine(message, language, conversation_history, user_profile, db):
+        yield chunk

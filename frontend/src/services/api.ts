@@ -1,6 +1,6 @@
 import { Scheme, SchemeCategory, StateData, DigiLockerUser } from '../types';
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export const fetchSchemes = async (params: Record<string, any> = {}) => {
   const query = new URLSearchParams();

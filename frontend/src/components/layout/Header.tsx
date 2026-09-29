@@ -42,9 +42,15 @@ export const Header: React.FC = () => {
 
   const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === i18n.language) || SUPPORTED_LANGUAGES[0];
 
+  const changeLanguage = (langCode: string) => {
+    i18n.changeLanguage(langCode);
+    localStorage.setItem('setu_lang', langCode);
+    setLangDropdownOpen(false);
+  };
+
   return (
     <>
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs no-print">
+      <header className="bg-white sticky top-0 z-50 shadow-xs no-print">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-2.5 flex items-center justify-between gap-4">
           
           {/* 1. Left: Official Emblem & SETU Branding */}
@@ -68,11 +74,11 @@ export const Header: React.FC = () => {
                 </span>
                 <span className="text-slate-300 font-light text-xl">|</span>
                 <span className="font-bold text-xl text-[#FF7700] font-serif">
-                  सेतु
+                  {currentLang.code === 'en' ? 'सेतु' : currentLang.native}
                 </span>
               </div>
               <div className="flex items-center space-x-1.5 text-[10px] font-medium text-slate-500">
-                <span>Government of India</span>
+                <span>{t('nav.govtOfIndia', 'Government of India')}</span>
                 <span className="text-slate-300">|</span>
                 <span className="text-slate-600">भारत सरकार</span>
               </div>
@@ -87,7 +93,7 @@ export const Header: React.FC = () => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Enter a scheme name (e.g. PM Kisan, Vidyasiri, Scholarships...)"
+                  placeholder={t('nav.searchPlaceholder', 'Enter a scheme name (e.g. PM Kisan, Vidyasiri, Scholarships...)')}
                   className="w-full text-xs sm:text-sm bg-transparent outline-none text-slate-800 placeholder:text-slate-400"
                 />
                 <div className="flex items-center space-x-1 text-slate-400 pl-2">
@@ -118,21 +124,21 @@ export const Header: React.FC = () => {
               </button>
 
               {langDropdownOpen && (
-                <div className="absolute right-0 mt-1 w-44 bg-white border border-slate-200 rounded-lg shadow-xl py-1 z-50">
-                  {SUPPORTED_LANGUAGES.slice(0, 8).map((lang) => (
+                <div className="absolute right-0 mt-1 w-48 max-h-72 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-xl py-1 z-50">
+                  <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                    Select Language (12 Scheduled)
+                  </div>
+                  {SUPPORTED_LANGUAGES.map((lang) => (
                     <button
                       key={lang.code}
-                      onClick={() => {
-                        i18n.changeLanguage(lang.code);
-                        setLangDropdownOpen(false);
-                      }}
+                      onClick={() => changeLanguage(lang.code)}
                       className={`w-full px-3 py-1.5 text-left text-xs transition-colors flex items-center justify-between ${
                         i18n.language === lang.code
                           ? 'bg-emerald-50 text-[#00875A] font-bold'
                           : 'text-slate-700 hover:bg-slate-50'
                       }`}
                     >
-                      <span>{lang.native}</span>
+                      <span className="font-medium">{lang.native}</span>
                       <span className="text-[10px] text-slate-400">{lang.name}</span>
                     </button>
                   ))}
@@ -143,11 +149,13 @@ export const Header: React.FC = () => {
             {/* User Login / Profile Button */}
             {currentUser ? (
               <div className="flex items-center space-x-2 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-1.5">
-                <CheckCircle className="w-4 h-4 text-[#00875A]" />
-                <span className="text-xs font-bold text-slate-800 hidden sm:inline">{currentUser.name}</span>
+                <Link to="/dashboard" className="flex items-center space-x-1.5 hover:opacity-80 transition-opacity">
+                  <CheckCircle className="w-4 h-4 text-[#00875A]" />
+                  <span className="text-xs font-bold text-slate-800 hidden sm:inline">{currentUser.name}</span>
+                </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-slate-400 hover:text-red-600 p-0.5 transition-colors"
+                  className="text-slate-400 hover:text-red-600 p-0.5 transition-colors ml-1"
                   title="Sign Out"
                 >
                   <LogOut className="w-3.5 h-3.5" />
@@ -159,7 +167,7 @@ export const Header: React.FC = () => {
                 className="flex items-center space-x-1.5 bg-[#00875A] hover:bg-[#00704A] text-white px-3.5 py-1.5 rounded-md font-bold text-xs shadow-xs hover:shadow transition-all"
               >
                 <User className="w-3.5 h-3.5" />
-                <span>Sign In</span>
+                <span>{t('nav.login', 'Citizen Sign In')}</span>
               </button>
             )}
           </div>
@@ -173,7 +181,7 @@ export const Header: React.FC = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search schemes (e.g. PM Kisan, Scholarships)..."
+                placeholder={t('nav.searchPlaceholder', 'Search schemes (e.g. PM Kisan, Scholarships)...')}
                 className="w-full text-xs bg-transparent outline-none text-slate-800"
               />
               <button type="submit" className="p-1 text-slate-500">

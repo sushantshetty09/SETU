@@ -8,7 +8,10 @@ import {
   ChevronDown, 
   ShieldCheck, 
   SlidersHorizontal,
-  ChevronUp
+  ChevronUp,
+  Volume2,
+  VolumeX,
+  Sparkles
 } from 'lucide-react';
 import { ChatMessages } from '../components/chat/ChatMessages';
 import { ChatInput } from '../components/chat/ChatInput';
@@ -18,7 +21,7 @@ import { SUPPORTED_LANGUAGES } from '../i18n/config';
 import { ChatMessage, DigiLockerUser } from '../types';
 
 export const ChatPage: React.FC = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const initialQuery = searchParams.get('q');
 
@@ -31,13 +34,36 @@ export const ChatPage: React.FC = () => {
   const [digiLockerUser, setDigiLockerUser] = useState<DigiLockerUser | null>(null);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [autoVoice, setAutoVoice] = useState(true);
+
+  const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === i18n.language) || SUPPORTED_LANGUAGES[0];
+
+  // Speak helper
+  const speakText = (text: string) => {
+    if (!('speechSynthesis' in window) || !text.trim()) return;
+    try {
+      window.speechSynthesis.cancel();
+      const clean = text.replace(/[*_#`[\]()]/g, ' ').replace(/\n+/g, '. ');
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.lang = currentLang.speechCode || 'en-IN';
+      utterance.rate = 0.95;
+
+      const voices = window.speechSynthesis.getVoices();
+      const matchingVoice = voices.find(v => v.lang.startsWith(utterance.lang) || v.lang.startsWith(i18n.language));
+      if (matchingVoice) utterance.voice = matchingVoice;
+
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.error('TTS error:', e);
+    }
+  };
 
   // Initialize welcome message
   useEffect(() => {
     const welcomeMsg: ChatMessage = {
       id: 'welcome',
       role: 'assistant',
-      content: `Namaste! I am SETU, your official government services guide.\n\nI can help you:\n- Find schemes you are eligible for\n- Understand required documents\n- Check DBT payment status\n- File and track grievances\n\nWhat do you need help with today?`,
+      content: t('chat.welcomeTitle', 'Namaste! I am SETU, your official government services guide.') + '\n\n' + t('chat.welcomeBody', 'I can help you find schemes you are eligible for, understand required documents, and check payment status.'),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       suggestions: [
         "Find schemes for me",
@@ -50,14 +76,19 @@ export const ChatPage: React.FC = () => {
     setMessages([welcomeMsg]);
     setSuggestions(welcomeMsg.suggestions || []);
 
-    // Auto-fire query if passed via URL (e.g. from Voice search on home page)
+    // Auto-fire query if passed via URL
     if (initialQuery && initialQuery.trim()) {
       handleSendMessage(initialQuery.trim());
     }
-  }, []);
+  }, [i18n.language]);
 
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || isStreaming) return;
+
+    // Cancel ongoing speech
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
 
     const userMsg: ChatMessage = {
       id: `usr-${Date.now()}`,
@@ -84,20 +115,37 @@ export const ChatPage: React.FC = () => {
     ]);
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: text,
-          language: i18n.language,
-          conversation_history: messages.slice(-6).map(m => ({ role: m.role, content: m.content })),
-          user_profile: {
-            state: "Karnataka",
-            gender: "female",
-            digilocker_verified: !!digiLockerUser
-          }
-        })
+      const requestPayload = JSON.stringify({
+        message: text,
+        language: i18n.language,
+        conversation_history: messages.slice(-6).map(m => ({ role: m.role, content: m.content })),
+        user_profile: {
+          state: "Karnataka",
+          gender: "female",
+          digilocker_verified: !!digiLockerUser
+        }
       });
+
+      const apiBase = import.meta.env.VITE_API_BASE_URL || '/api';
+      let response: Response;
+      try {
+        response = await fetch(`${apiBase}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: requestPayload
+        });
+      } catch (networkErr) {
+        // Fallback to direct backend port only during local development if reverse proxy is offline
+        if (!import.meta.env.VITE_API_BASE_URL && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+          response = await fetch('http://127.0.0.1:8000/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: requestPayload
+          });
+        } else {
+          throw networkErr;
+        }
+      }
 
       if (!response.body) throw new Error("No response stream");
 
@@ -157,6 +205,12 @@ export const ChatPage: React.FC = () => {
           }
         }
       }
+
+      // If auto-voice is enabled, speak out response in the chosen language
+      if (autoVoice && assistantContent) {
+        speakText(assistantContent);
+      }
+
     } catch (err) {
       console.error("Chat error:", err);
       setMessages(prev =>
@@ -172,12 +226,15 @@ export const ChatPage: React.FC = () => {
   };
 
   const handleNewChat = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
     setRightPanelState('IDLE');
     setRightPanelData(null);
     const welcomeMsg: ChatMessage = {
       id: `welcome-${Date.now()}`,
       role: 'assistant',
-      content: `Namaste! I am SETU, your official government services guide.\n\nHow can I help you today?`,
+      content: t('chat.welcomeTitle', 'Namaste! I am SETU, your official government services guide.') + '\n\n' + t('chat.welcomeBody', 'How can I assist you today?'),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       suggestions: [
         "Find schemes for me",
@@ -192,11 +249,14 @@ export const ChatPage: React.FC = () => {
 
   const handleDigiLockerSuccess = (user: DigiLockerUser) => {
     setDigiLockerUser(user);
-    // Notify chat that user verified DigiLocker
     handleSendMessage("I have connected my DigiLocker. Please check my payment status now.");
   };
 
-  const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === i18n.language) || SUPPORTED_LANGUAGES[0];
+  const handleLanguageChange = (code: string) => {
+    i18n.changeLanguage(code);
+    localStorage.setItem('setu_lang', code);
+    setLangDropdownOpen(false);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 h-[calc(100vh-130px)] flex flex-col">
@@ -206,23 +266,42 @@ export const ChatPage: React.FC = () => {
         <div className="bg-[#1A3A6B] text-white px-4 py-3 flex items-center justify-between border-b-2 border-setu-saffron flex-shrink-0">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center font-serif font-bold text-setu-saffron text-sm border border-white/20">
-              सेतु
+              {currentLang.code === 'en' ? 'सेतु' : currentLang.native.slice(0, 2)}
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h2 className="font-bold text-sm sm:text-base">SETU AI Assistant</h2>
+                <h2 className="font-bold text-sm sm:text-base">{t('chat.title', 'SETU AI Assistant')}</h2>
                 <span className="inline-flex items-center space-x-1 bg-emerald-500/20 text-emerald-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Online</span>
+                  <span>{t('chat.status', 'Online')}</span>
                 </span>
               </div>
               <p className="text-[11px] text-slate-300 hidden sm:block">
-                Multilingual Conversational Discovery Engine
+                Multilingual Voice & Conversational Entitlement Guide
               </p>
             </div>
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Auto-Voice Reply Toggle */}
+            <button
+              onClick={() => {
+                if (autoVoice && 'speechSynthesis' in window) {
+                  window.speechSynthesis.cancel();
+                }
+                setAutoVoice(!autoVoice);
+              }}
+              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded text-xs font-semibold transition-all ${
+                autoVoice
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'bg-white/10 text-slate-300 hover:bg-white/20'
+              }`}
+              title={autoVoice ? "Voice Reply is ON (Click to mute)" : "Voice Reply is OFF (Click to enable audio reply)"}
+            >
+              {autoVoice ? <Volume2 className="w-3.5 h-3.5 text-amber-300" /> : <VolumeX className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">{autoVoice ? 'Voice Reply ON' : 'Voice Reply OFF'}</span>
+            </button>
+
             {/* Mobile Context Panel Toggle */}
             <button
               onClick={() => setMobilePanelOpen(!mobilePanelOpen)}
@@ -248,11 +327,12 @@ export const ChatPage: React.FC = () => {
                   {SUPPORTED_LANGUAGES.map((lang) => (
                     <button
                       key={lang.code}
-                      onClick={() => {
-                        i18n.changeLanguage(lang.code);
-                        setLangDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-1.5 text-xs text-slate-200 hover:bg-setu-blue hover:text-white block"
+                      onClick={() => handleLanguageChange(lang.code)}
+                      className={`w-full text-left px-3 py-1.5 text-xs block transition-colors ${
+                        i18n.language === lang.code
+                          ? 'bg-emerald-600 text-white font-bold'
+                          : 'text-slate-200 hover:bg-setu-blue hover:text-white'
+                      }`}
                     >
                       {lang.native} ({lang.name})
                     </button>
@@ -264,55 +344,52 @@ export const ChatPage: React.FC = () => {
             {/* New Chat Button */}
             <button
               onClick={handleNewChat}
-              className="flex items-center space-x-1 bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded text-xs font-semibold text-white transition-colors"
-              title="Reset conversation"
+              className="flex items-center space-x-1 bg-white/10 hover:bg-white/20 text-white px-2.5 py-1 rounded text-xs font-medium transition-colors"
+              title="Start a new chat session"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">New Chat</span>
+              <span className="hidden sm:inline">Reset</span>
             </button>
           </div>
         </div>
 
-        {/* 60 / 40 Split Layout */}
+        {/* Chat Body: Left Messages + Right Dynamic Panel */}
         <div className="flex-1 flex overflow-hidden relative">
-          {/* Left 60%: Messages and Input */}
-          <div className="flex-1 lg:w-[60%] flex flex-col justify-between overflow-hidden bg-slate-50/40">
-            <ChatMessages
-              messages={messages}
-              isStreaming={isStreaming}
-            />
+          {/* Left Chat Flow */}
+          <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/50">
+            <ChatMessages messages={messages} isStreaming={isStreaming} />
 
             <ChatInput
               onSendMessage={handleSendMessage}
+              onSelectSuggestion={(text) => handleSendMessage(text)}
               disabled={isStreaming}
               suggestions={suggestions}
-              onSelectSuggestion={(s) => handleSendMessage(s)}
             />
           </div>
 
-          {/* Right 40%: Dynamic Context Panel (Desktop) */}
-          <div className="hidden lg:block lg:w-[40%] h-full">
+          {/* Right Dynamic Context Panel (Desktop) */}
+          <div className="hidden lg:block w-[380px] xl:w-[420px] border-l border-slate-200 bg-white overflow-y-auto">
             <DynamicRightPanel
               state={rightPanelState}
               data={rightPanelData}
               onOpenDigiLocker={() => setDigiLockerModalOpen(true)}
-              onSelectSuggestion={(s) => handleSendMessage(s)}
+              onSelectSuggestion={(q) => handleSendMessage(q)}
             />
           </div>
 
-          {/* Mobile Bottom Sheet / Drawer */}
+          {/* Mobile Right Context Drawer */}
           {mobilePanelOpen && (
-            <div className="lg:hidden absolute inset-0 z-30 bg-white flex flex-col animate-fade-in">
-              <div className="bg-slate-100 p-3 border-b border-slate-200 flex items-center justify-between">
-                <span className="font-bold text-xs text-slate-800">Dynamic Context & Scheme Cards</span>
+            <div className="lg:hidden absolute inset-0 z-30 bg-white flex flex-col animate-in slide-in-from-bottom duration-200">
+              <div className="p-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <span className="font-bold text-xs text-slate-700">Scheme Information & Tools</span>
                 <button
                   onClick={() => setMobilePanelOpen(false)}
-                  className="text-xs font-bold text-setu-blue hover:underline"
+                  className="text-xs text-slate-500 font-bold px-2 py-1 bg-white border border-slate-200 rounded"
                 >
                   Close
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto p-2">
                 <DynamicRightPanel
                   state={rightPanelState}
                   data={rightPanelData}
@@ -320,9 +397,9 @@ export const ChatPage: React.FC = () => {
                     setMobilePanelOpen(false);
                     setDigiLockerModalOpen(true);
                   }}
-                  onSelectSuggestion={(s) => {
+                  onSelectSuggestion={(q) => {
                     setMobilePanelOpen(false);
-                    handleSendMessage(s);
+                    handleSendMessage(q);
                   }}
                 />
               </div>
@@ -331,12 +408,11 @@ export const ChatPage: React.FC = () => {
         </div>
       </div>
 
-      {/* DigiLocker Modal */}
+      {/* DigiLocker Simulation Modal */}
       <DigiLockerModal
         isOpen={digiLockerModalOpen}
         onClose={() => setDigiLockerModalOpen(false)}
         onSuccess={handleDigiLockerSuccess}
-        schemeName={rightPanelData?.scheme_name || "Gruha Lakshmi Scheme"}
       />
     </div>
   );

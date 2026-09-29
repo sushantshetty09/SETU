@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Radio } from 'lucide-react';
+import { Mic, MicOff, Radio, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { SUPPORTED_LANGUAGES } from '../../i18n/config';
 
@@ -16,93 +16,137 @@ export const VoiceButton: React.FC<VoiceButtonProps> = ({
 }) => {
   const { i18n } = useTranslation();
   const [isRecording, setIsRecording] = useState(false);
-  const [supported, setSupported] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
-  const silenceTimerRef = useRef<any>(null);
+  const accumulatedTranscriptRef = useRef<string>('');
+  const onTranscriptRef = useRef(onTranscript);
+
+  // Keep callback ref updated without triggering effect re-runs
+  useEffect(() => {
+    onTranscriptRef.current = onTranscript;
+  }, [onTranscript]);
 
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setSupported(false);
-      return;
-    }
+    if (!SpeechRecognition) return;
 
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = true;
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
 
-    // Get speech language code according to current active language
-    const currentLangConfig = SUPPORTED_LANGUAGES.find(l => l.code === i18n.language);
-    recognition.lang = currentLangConfig?.speechCode || 'en-IN';
+      const currentLangConfig = SUPPORTED_LANGUAGES.find(l => l.code === i18n.language);
+      recognition.lang = currentLangConfig?.speechCode || 'en-IN';
 
-    recognition.onstart = () => {
-      setIsRecording(true);
-    };
+      recognition.onstart = () => {
+        setIsRecording(true);
+        setErrorMessage(null);
+        accumulatedTranscriptRef.current = '';
+      };
 
-    recognition.onresult = (event: any) => {
-      clearTimeout(silenceTimerRef.current);
-      let transcriptText = '';
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        transcriptText += event.results[i][0].transcript;
-      }
-      
-      // Auto-stop after 2 seconds of silence once speech captured
-      silenceTimerRef.current = setTimeout(() => {
-        if (recognitionRef.current) {
-          recognitionRef.current.stop();
+      recognition.onresult = (event: any) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = 0; i < event.results.length; ++i) {
+          const trans = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += trans + ' ';
+          } else {
+            interimTranscript += trans;
+          }
         }
-      }, 2000);
 
-      if (event.results[0].isFinal) {
-        onTranscript(transcriptText);
+        const currentFull = (finalTranscript || interimTranscript).trim();
+        if (currentFull) {
+          accumulatedTranscriptRef.current = currentFull;
+          onTranscriptRef.current(currentFull);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn("Speech recognition event error:", event.error);
+        if (event.error === 'not-allowed') {
+          setErrorMessage('Mic blocked. Allow permission in browser.');
+        } else if (event.error === 'no-speech') {
+          // No speech detected, ignore or keep listening
+        } else {
+          setErrorMessage(`Mic error: ${event.error}`);
+        }
         setIsRecording(false);
-      }
-    };
+      };
 
-    recognition.onerror = () => {
-      setIsRecording(false);
-    };
+      recognition.onend = () => {
+        setIsRecording(false);
+        if (accumulatedTranscriptRef.current.trim()) {
+          onTranscriptRef.current(accumulatedTranscriptRef.current.trim());
+        }
+      };
 
-    recognition.onend = () => {
-      setIsRecording(false);
-    };
-
-    recognitionRef.current = recognition;
+      recognitionRef.current = recognition;
+    } catch (err) {
+      console.error("Speech Recognition initialization error:", err);
+    }
 
     return () => {
       if (recognitionRef.current) {
-        recognitionRef.current.abort();
+        try {
+          recognitionRef.current.abort();
+        } catch (e) {}
       }
-      clearTimeout(silenceTimerRef.current);
     };
-  }, [i18n.language, onTranscript]);
+  }, [i18n.language]);
 
-  const toggleRecording = () => {
-    if (!supported) {
-      alert("Speech Recognition is not supported by your current browser. Please use Chrome, Edge, or Safari.");
+  const toggleRecording = async () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please try Google Chrome or Microsoft Edge.");
       return;
     }
 
     if (isRecording) {
-      recognitionRef.current?.stop();
+      try {
+        recognitionRef.current?.stop();
+      } catch (e) {}
       setIsRecording(false);
     } else {
       try {
-        const currentLangConfig = SUPPORTED_LANGUAGES.find(l => l.code === i18n.language);
-        if (recognitionRef.current) {
-          recognitionRef.current.lang = currentLangConfig?.speechCode || 'en-IN';
-          recognitionRef.current.start();
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          try {
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+          } catch (micErr) {
+            console.warn("Mic permission prompt warning:", micErr);
+          }
         }
-      } catch (e) {
-        console.error("Speech recognition error:", e);
+
+        if (recognitionRef.current) {
+          const currentLangConfig = SUPPORTED_LANGUAGES.find(l => l.code === i18n.language);
+          recognitionRef.current.lang = currentLangConfig?.speechCode || 'en-IN';
+          accumulatedTranscriptRef.current = '';
+          recognitionRef.current.start();
+          setIsRecording(true);
+          setErrorMessage(null);
+        }
+      } catch (e: any) {
+        console.error("Failed to start voice recognition:", e);
+        try {
+          recognitionRef.current?.stop();
+          setTimeout(() => {
+            recognitionRef.current?.start();
+            setIsRecording(true);
+          }, 200);
+        } catch (err) {
+          setErrorMessage('Could not activate microphone.');
+        }
       }
     }
   };
 
   const sizeClasses = {
-    sm: 'w-8 h-8',
-    md: 'w-10 h-10',
-    lg: 'w-12 h-12',
+    sm: 'w-7 h-7',
+    md: 'w-9 h-9',
+    lg: 'w-11 h-11',
   };
 
   return (
@@ -112,23 +156,30 @@ export const VoiceButton: React.FC<VoiceButtonProps> = ({
         onClick={toggleRecording}
         className={`relative flex items-center justify-center rounded-full transition-all focus:outline-hidden ${sizeClasses[size]} ${
           isRecording
-            ? 'bg-red-600 text-white animate-pulse-ring'
-            : 'bg-setu-blue hover:bg-setu-blue-dark text-white shadow-xs'
+            ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse shadow-md ring-2 ring-red-400'
+            : 'bg-emerald-50 hover:bg-emerald-100 text-[#00875A] border border-emerald-300 shadow-2xs'
         } ${className}`}
-        title={isRecording ? 'Listening... Click to stop' : 'Voice Input (Speak in your language)'}
+        title={isRecording ? 'Listening... Click to send speech' : 'Voice Input (Click and speak)'}
         aria-label="Voice input button"
       >
         {isRecording ? (
-          <Mic className="w-5 h-5 animate-pulse" />
+          <Mic className="w-4 h-4 animate-bounce" />
         ) : (
-          <Mic className="w-5 h-5" />
+          <Mic className="w-4 h-4" />
         )}
       </button>
 
+      {/* Floating Listening Indicator Badge */}
       {isRecording && (
-        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-semibold px-2 py-0.5 rounded-md whitespace-nowrap shadow-md flex items-center space-x-1 animate-fade-in">
-          <Radio className="w-2.5 h-2.5 animate-spin" />
+        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-lg flex items-center space-x-1 z-50 animate-pulse">
+          <Radio className="w-2.5 h-2.5" />
           <span>Listening...</span>
+        </span>
+      )}
+
+      {errorMessage && (
+        <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-amber-300 text-[10px] font-semibold px-2 py-0.5 rounded shadow-lg whitespace-nowrap z-50">
+          {errorMessage}
         </span>
       )}
     </div>
