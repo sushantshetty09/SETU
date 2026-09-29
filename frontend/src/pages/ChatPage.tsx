@@ -126,20 +126,25 @@ export const ChatPage: React.FC = () => {
         }
       });
 
+      const apiBase = import.meta.env.VITE_API_BASE_URL || '/api';
       let response: Response;
       try {
-        response = await fetch('/api/chat', {
+        response = await fetch(`${apiBase}/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: requestPayload
         });
       } catch (networkErr) {
-        // Fallback to direct backend port if reverse proxy is offline
-        response = await fetch('http://127.0.0.1:8000/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: requestPayload
-        });
+        // Fallback to direct backend port only during local development if reverse proxy is offline
+        if (!import.meta.env.VITE_API_BASE_URL && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+          response = await fetch('http://127.0.0.1:8000/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: requestPayload
+          });
+        } else {
+          throw networkErr;
+        }
       }
 
       if (!response.body) throw new Error("No response stream");
