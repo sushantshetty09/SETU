@@ -1,173 +1,93 @@
 # SETU (सेतु) — One Voice. Every Service.
 
-> **National AI-Powered Government Schemes Discovery Portal**
+> **National AI-Powered Government Schemes Discovery Portal**  
 > *A production-ready prototype empowering Indian citizens to discover, verify, and access government welfare entitlements through natural conversation in 12 Indian languages.*
 
----
+<!-- <div align="center">
+  <img src="https://via.placeholder.com/150x150.png?text=SETU+Logo" alt="SETU Logo">
+</div> -->
 
-## Brand & Identity
+## Overview
+SETU (सेतु) is an AI-powered multilingual government service discovery platform that helps citizens discover schemes, benefits, certificates, public services, and eligibility information through conversational AI, voice interaction, life-event-based guidance, and accessibility-first experiences.
 
-| Property | Value |
-|---|---|
-| **Name** | SETU (सेतु) |
-| **Tagline** | One Voice. Every Service. |
-| **Typography** | Noto Sans — Devanagari, Kannada, Tamil, Telugu, and Pan-Indian scripts |
-| **Icon system** | Lucide Icons (SVG only — zero emoji policy across all UI and AI responses) |
+## Problem Statement
+Indian citizens struggle to discover government schemes, benefits, documents, and public services due to:
+- **Fragmented Portals:** Information is scattered across dozens of central and state ministry websites.
+- **Low Awareness:** Citizens are often unaware of the entitlements they are eligible for.
+- **Language Barriers:** Official documents are often in English or formal Hindi, making them inaccessible to rural populations.
+- **Digital Literacy Challenges:** Navigating complex government forms and UI is difficult for many.
 
-**Brand Colors**
+## Solution
+SETU solves this problem by providing a unified, conversational interface:
+- **AI Assistance:** A conversational agent that acts as a citizen service guide.
+- **Voice Interaction:** Web Speech API integration allows users to speak their needs instead of typing.
+- **Multilingual Support:** Native support for 12 Indian languages, breaking down language barriers.
+- **Life Event Engine:** Discovers schemes based on major life milestones (birth, education, marriage, etc.).
+- **Guided Discovery:** An intuitive 4-step eligibility wizard that calculates match probabilities.
+- **Accessibility Features:** GIGW & WCAG 2.0 AA compliance with font scaling and high-contrast modes.
 
-| Token | Hex |
-|---|---|
-| Primary Blue | `#1A3A6B` |
-| Saffron Accent | `#FF6B00` |
-| India Green | `#138808` |
-| Background | `#F5F7FA` |
-| White | `#FFFFFF` |
+## Key Features
 
----
+### Multilingual Voice Assistant
+Real-time Server-Sent Events (SSE) chat with voice input. Communicates in the user's native language and provides structured, actionable responses.
+
+### Life Event Engine
+Navigate services based on life stages (e.g., Birth, Education, Marriage, Retirement). Instantly surfaces relevant schemes (e.g., Sukanya Samriddhi for a newborn daughter).
+
+### Help Me Find What I Need
+An intelligent Eligibility Wizard. Users provide basic demographic details (Age, Gender, State, Income, Category) and receive a real-time match score for 700+ schemes.
+
+### Government Scheme Discovery
+A comprehensive, searchable, and filterable directory of schemes. Includes a live web-scraping module that pulls real-time updates and scheme details from official portals like myscheme.gov.in.
+
+### Service Discovery
+Directory of verified official government portals with direct "Apply Now" links, bridging the gap between discovery and action.
+
+### Eligibility Assistance
+The AI agent uses tools to check eligibility against strict database criteria (age limits, income ceilings, domicile requirements) and provides a clear breakdown of met/unmet conditions.
+
+### Accessibility Features
+Built with inclusivity in mind: top accessibility bar allows users to increase/decrease font size and switch to a high-contrast mode for visually impaired users.
+
+### Citizen Journey Guidance
+A dynamic 5-state right context panel in the chat interface that adapts to the conversation (Idle, Schemes List, Document Checklist, DigiLocker Auth, Eligibility Breakdown).
+
+## Innovation Highlights
+- **Intent-Based Discovery:** The AI understands intent (e.g., "I need money for my daughter's college") rather than relying on exact keyword matches.
+- **Voice-First Government Access:** Removes typing friction for rural or elderly users.
+- **Deterministic Fallback Engine:** The system functions 100% even if the primary LLM API (OpenRouter/Anthropic) goes down, using a localized conversational routing engine.
+- **DigiLocker Integration (Simulated):** Seamlessly connects to verify identity and check Direct Benefit Transfer (DBT) payment status securely.
+
+## System Architecture
+
+```mermaid
+graph TD
+    Citizen["👤 Citizen / VLE"] --> Frontend["🖥️ React 18 SPA (Vite)"]
+    Frontend --> API["⚙️ FastAPI Backend (:8000)"]
+    
+    API --> AI["🧠 AI Routing Engine"]
+    API --> DB[("🗄️ SQLite DB (Schemes)")]
+    API --> SCRAPER["🕸️ Web Scraper"]
+    
+    AI --> LLM["🌐 OpenRouter / Anthropic API"]
+    AI --> FALLBACK["⚙️ Deterministic Fallback"]
+    AI --> TOOLS["🛠️ Tool Executor"]
+    
+    TOOLS --> DB
+    SCRAPER --> GOV["🏛️ myscheme.gov.in / PIB"]
+```
 
 ## Quick Start
 
-### Option 1 — One-Click Launch (Windows)
-
-```bash
-.\start.bat
-```
-
-### Option 2 — Manual Start
-
-**Backend** (FastAPI + SQLAlchemy + Claude Tool Calling):
-
-```bash
-cd backend
-py -m pip install -r requirements.txt
-py run.py
-```
-
-Backend runs on `http://localhost:8000`
-API docs at `http://localhost:8000/docs`
-
-**Frontend** (React 18 + TypeScript + Vite + Tailwind CSS):
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend runs on `http://localhost:5173`
-
----
-
-## Pages & Routes
-
-| Route | Page | Description |
-|---|---|---|
-| `/` | **Home** | Accessibility bar (A-/A+, contrast toggle), large voice search bar (Web Speech API), 12 category cards, animated stats, interactive SVG India state map, popular schemes horizontal scroll |
-| `/find` | **Eligibility Wizard** | 4-step progressive questionnaire (Age, Gender, State, Income slider, Social category, BPL, Needs) with real-time match scoring and eligibility criteria checklist modal |
-| `/schemes` | **Scheme Listing** | Directory with search bar, sidebar filters (Categories, States, Central/State, Benefit types, Online/Offline), sorting, and skeleton loaders |
-| `/schemes/:id` | **Scheme Detail** | 6 functional tabs: Overview, Eligibility, Benefits, Documents Required (PDF checklist download), How to Apply, FAQs — plus quick info card and official portal links |
-| `/chat` | **SETU AI Assistant** | Real-time SSE chat with voice input and a dynamic 5-state right context panel: Idle, Schemes, Docs checklist, DigiLocker OAuth, Eligibility breakdown |
-| `/csc` | **CSC Operator Portal** | Village Level Entrepreneur dashboard (`operator@csc.gov.in` / `demo123`), daily stats, citizen assistance logs, on-behalf intake mode, printable citizen summary reports |
-| `/about` | **About** | Mission, governance standards, GIGW / WCAG 2.0 AA compliance, participating ministries |
-
----
-
-## Verified User Scenarios
-
-**1. Voice Search from Home**
-Click mic on home page → speak requirement (e.g. *"scholarship for my daughter in college"*) → auto-fills and redirects to `/chat` with AI scheme recommendations.
-
-**2. Eligibility Wizard**
-Fill: 35-yr female · Karnataka · Rs 1.8L income → Gruha Lakshmi matches at 98% score → click *"Check Eligibility"* for green checkmark breakdown.
-
-**3. Payment Status + DigiLocker**
-Ask in chat: *"Did I get my Gruha Lakshmi money this month?"* → triggers DigiLocker permission card → click *"Connect DigiLocker"* → instant verified DBT credit response (Rs 2,000 to A/C ending 7834 on 15 Nov 2024).
-
-**4. Multilingual Switch**
-Switch to ಕನ್ನಡ (Kannada) or हिन्दी (Hindi) → UI translates and AI responds fluently in native script.
-
-**5. CSC Operator Assist**
-Log in with `operator@csc.gov.in` / `demo123` → fill walk-in citizen form → generate and print a formatted summary report.
-
----
-
-## Architecture
-
-See [`architecture.md`](./architecture.md) for the full layer-by-layer breakdown, data flows, and service diagram.
-
-### Overview
-
-```
-Users
-  ├── Citizen
-  └── CSC Operator
-        │
-        ▼
-Frontend  (React 18 / TypeScript · Vite · Tailwind · React Router · i18next)
-        │
-        ▼
-Backend API  (FastAPI / Python)
-  REST API · request routing
-  ├── Scheme service
-  ├── Eligibility service
-  ├── Chat service  ──── SSE stream
-  ├── DigiLocker service
-  ├── CSC service
-  └── Grievance service
-        │
-        ├──▶ AI Intelligence
-        │      AI Agent (claude-sonnet-4-6)
-        │      Intent · Tool Calling · Orchestration
-        │            │
-        │            └── Rule-based fallback (if AI unavailable)
-        │                Multilingual · DB retrieval
-        │
-        ├──▶ Data Layer  (SQLAlchemy ORM)
-        │      SQLite (dev) · PostgreSQL (prod)
-        │      schemes · grievances · csc_users · citizen_query_logs
-        │
-        ├──▶ Cache  (Redis · optional)
-        │      Scheme metadata · Categories · FAQs
-        │      In-memory fallback if Redis unavailable
-        │
-        └──▶ External Integrations
-               Anthropic Claude API
-               DigiLocker (OAuth · document verification)
-               Government scheme portals
-               Web Speech API
-```
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | React 18, TypeScript, Vite, Tailwind CSS, React Router, i18next |
-| Backend | FastAPI, Python |
-| ORM | SQLAlchemy |
-| Database | SQLite (dev) / PostgreSQL (prod) |
-| Cache | Redis (optional — in-memory fallback) |
-| AI | Anthropic Claude (`claude-sonnet-4-6`) — tool-calling + streaming |
-| Voice | Web Speech API (browser-native, no third-party STT cost) |
-| Auth / Docs | DigiLocker OAuth |
-| Compliance | GIGW · WCAG 2.0 AA |
-
----
-
-## Design Principles
-
-- **Graceful degradation** — Redis and AI agent both have fallbacks; system stays operational under any failure
-- **Multilingual-first** — i18next on frontend; AI and rule-based fallback both respond in native script
-- **Voice-accessible** — Web Speech API for low-literacy users; no app install required
-- **CSC operator support** — Dedicated portal enables assisted-service mode for rural Common Service Centres
-- **DB portability** — SQLite for zero-config local dev; PostgreSQL-compatible for production scale
-- **Zero-emoji policy** — All UI elements and AI responses use SVG icons and Indian script typography only
-
----
-
-## Compliance
-
-- Guidelines for Indian Government Websites (GIGW)
-- WCAG 2.0 AA accessibility standard
+1. **Clone & Setup:**
+   ```bash
+   git clone https://github.com/maheshMadiwalar18/setu_bfb.git
+   cd setu_bfb
+   ```
+2. **Start Servers (Windows):**
+   ```bash
+   .\start.bat
+   ```
+3. **Manual Start:**
+   - Backend: `cd backend && pip install -r requirements.txt && python run.py`
+   - Frontend: `cd frontend && npm install && npm run dev`
